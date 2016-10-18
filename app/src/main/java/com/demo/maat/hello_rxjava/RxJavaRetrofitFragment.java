@@ -31,7 +31,6 @@ public class RxJavaRetrofitFragment extends Fragment {
     private Subscription subscription;
 
     private CompositeSubscription mCompositeSubscription;
-    ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

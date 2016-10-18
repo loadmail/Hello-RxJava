@@ -17,7 +17,6 @@ import butterknife.OnClick;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -97,75 +96,65 @@ public class Operators1Fragment extends Fragment {
         }
     }
 
-    /**
-     * 从3开始连续产生10个数字
-     */
+    private void doJustOperation() {
+        Subscription subscription = Observable.just(1, 2, 3, 4, 5)
+                .subscribe(new Subscriber<Integer>() {
+                    @Override
+                    public void onNext(Integer item) {
+                        printLog("Next" + item);
+                    }
 
-    private void doRangeOperation() {
-        Subscription rangeSub =Observable.range(3,10).subscribe(new Subscriber<Integer>() {
+                    @Override
+                    public void onError(Throwable error) {
+                        printLog("Error");
+                    }
+
+                    @Override
+                    public void onCompleted() {
+                        printLog("Completed");
+                    }
+                });
+        mCompositeSubscription.add(subscription);
+    }
+
+    /**
+     * 接受一个数组,与just的区别就是接受的参数不同
+     */
+    private void doFromOperation() {
+        Integer[] items = {0, 1, 2, 3, 4, 5};
+        Observable from = Observable.from(items);
+
+        from.subscribe(
+                new Action1<Integer>() {
+                    @Override
+                    public void call(Integer item) {
+                        printLog("Next" + item);
+                    }
+                },
+                error -> printLog("Error"),
+                () -> printLog("Completed")
+        );
+
+    }
+
+    // 从1开始输出3个数,重复2次
+    private void doRepeatOperation() {
+        Observable.range(1, 3).repeat(2).subscribe(new Subscriber<Integer>() {
             @Override
             public void onCompleted() {
-            printLog("Completed");
+                printLog("Completed");
             }
 
             @Override
             public void onError(Throwable e) {
-            printLog("Error");
+                printLog("Error");
             }
 
             @Override
             public void onNext(Integer i) {
-            printLog("Next"+i);
+                printLog("Nest" + i);
             }
         });
-        mCompositeSubscription.add(rangeSub);
-
-    }
-
-    /**
-     * 每隔1秒输出一个数字
-     */
-    private void doTimerOperation() {
-
-        Subscription timerSub=Observable.timer(1, 1, TimeUnit.SECONDS).subscribe(new Subscriber<Long>() {
-            @Override
-            public void onCompleted() {
-                printLog("Completed");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                printLog("Error");
-            }
-
-            @Override
-            public void onNext(Long aLong) {
-                printLog("Next" + aLong);
-            }
-        });
-        mCompositeSubscription.add(timerSub);
-    }
-
-    private void doIntervalOperation() {
-        Subscription intervalSub=Observable.interval(1, TimeUnit.SECONDS).subscribe(new Subscriber<Long>() {
-            @Override
-            public void onCompleted() {
-                printLog("Completed");
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                printLog("Error");
-
-            }
-
-            @Override
-            public void onNext(Long aLong) {
-                printLog("Next" + aLong);
-            }
-        });
-        mCompositeSubscription.add(intervalSub);
     }
 
     /**
@@ -173,6 +162,7 @@ public class Operators1Fragment extends Fragment {
      */
 
     private void doRepeatWhenOperation() {
+        // TODO: 2016/10/18 这个有点复杂
         Observable.just(1, 2, 3).repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
             @Override
             public Observable<?> call(Observable<? extends Void> observable) {
@@ -208,9 +198,57 @@ public class Operators1Fragment extends Fragment {
             }
         });
     }
-    // 从1开始输出3个数,重复2次
-    private void doRepeatOperation() {
-        Observable.range(1, 3).repeat(2).subscribe(new Subscriber<Integer>() {
+
+    private void doIntervalOperation() {
+        // TODO: 2016/10/18 间隔1s
+        Subscription intervalSub = Observable.interval(1, TimeUnit.SECONDS).subscribe(new Subscriber<Long>() {
+            @Override
+            public void onCompleted() {
+                printLog("Completed");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                printLog("Error");
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                printLog("Next" + aLong);
+            }
+        });
+        mCompositeSubscription.add(intervalSub);
+    }
+    /**
+     * 每隔1秒输出一个数字
+     */
+    private void doTimerOperation() {
+//timer被interval替代    interval 间隔  period 周期(延迟,间隔,时间单位)
+        Subscription timerSub = Observable.interval(1, 1, TimeUnit.SECONDS).subscribe(new Subscriber<Long>() {
+            @Override
+            public void onCompleted() {
+                printLog("Completed");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                printLog("Error");
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                printLog("Next" + aLong);
+            }
+        });
+        mCompositeSubscription.add(timerSub);
+    }
+
+    /**
+     * 从3开始连续产生10个数字
+     */
+
+    private void doRangeOperation() {
+        Subscription rangeSub = Observable.range(3, 10).subscribe(new Subscriber<Integer>() {
             @Override
             public void onCompleted() {
                 printLog("Completed");
@@ -223,61 +261,13 @@ public class Operators1Fragment extends Fragment {
 
             @Override
             public void onNext(Integer i) {
-                printLog("Nest" + i);
+                printLog("Next" + i);
             }
         });
-    }
-
-    /**
-     * 接受一个数组,与just的区别就是接受的参数不同
-     */
-    private void doFromOperation() {
-        Integer[] items = {0, 1, 2, 3, 4, 5};
-        Observable from = Observable.from(items);
-
-        from.subscribe(
-                new Action1<Integer>() {
-                    @Override
-                    public void call(Integer item) {
-                        printLog("Next" + item);
-                    }
-                },
-                new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable error) {
-                        printLog("Error");
-                    }
-                },
-                new Action0() {
-                    @Override
-                    public void call() {
-                        printLog("Compeleted");
-                    }
-                }
-        );
+        mCompositeSubscription.add(rangeSub);
 
     }
 
-    private void doJustOperation() {
-        Subscription subscription = Observable.just(1, 2, 3, 4, 5)
-                .subscribe(new Subscriber<Integer>() {
-                    @Override
-                    public void onNext(Integer item) {
-                        printLog("Next" + item);
-                    }
-
-                    @Override
-                    public void onError(Throwable error) {
-                        printLog("Error");
-                    }
-
-                    @Override
-                    public void onCompleted() {
-                        printLog("Completed");
-                    }
-                });
-        mCompositeSubscription.add(subscription);
-    }
 
     private void printLog(String s) {
         Log.i(TAG, s);

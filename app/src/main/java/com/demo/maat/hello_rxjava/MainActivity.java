@@ -11,6 +11,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * 地址:https://github.com/loadmail/Hello-RxJava
+ */
 public class MainActivity extends AppCompatActivity {
 
 

@@ -67,9 +67,7 @@ public class Operators2Fragment extends Fragment {
     @OnClick({R.id.btn_buffer, R.id.btn_flarmap, R.id.btn_concatmap, R.id.btn_switchmap})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_buffer:
-                doBufferOperation();
-                break;
+
             case R.id.btn_flarmap:
                 doflatMap();
                 break;
@@ -79,9 +77,44 @@ public class Operators2Fragment extends Fragment {
             case R.id.btn_switchmap:
                 doSwitchmap();
                 break;
+            case R.id.btn_buffer:
+                doBufferOperation();
+                break;
         }
     }
+    //与map一样,都是对数据转化,map是一对一,flatmap一对多;
+    private void doflatMap() {
+        Bean bean=new Bean();
+        Observable.just(bean)
+                .flatMap(new Func1<Bean, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(Bean bean) {
+                        return Observable.from(bean.getData());
+                    }
 
+                })
+                .subscribe(s -> {
+                    printLog("Flat Next"+s);
+                });
+
+    }
+    //与flatmap大致相同,只是产生的顺序不同;
+    private void doConcatmap() {
+        Observable.just(10, 20, 30).concatMap(new Func1<Integer, Observable<Integer>>() {
+            @Override
+            public Observable<Integer> call(Integer integer) {
+                //10的延迟执行时间为200毫秒、20和30的延迟执行时间为180毫秒
+                int delay = 200;
+                if (integer > 10)
+                    delay = 180;
+
+                return Observable.from(new Integer[]{integer, integer / 2}).delay(delay, TimeUnit.MILLISECONDS);
+            }
+        }).observeOn(AndroidSchedulers.mainThread()).subscribe(integer -> {
+            printLog("Concat Next"+integer);
+        });
+
+    }
     private void doSwitchmap() {
         Observable.just(10, 20, 30).switchMap(new Func1<Integer, Observable<Integer>>() {
             @Override
@@ -100,48 +133,6 @@ public class Operators2Fragment extends Fragment {
             }
         });
     }
-
-    //与flatmap大致相同,只是产生的顺序不同;
-    private void doConcatmap() {
-        Observable.just(10, 20, 30).concatMap(new Func1<Integer, Observable<Integer>>() {
-            @Override
-            public Observable<Integer> call(Integer integer) {
-                //10的延迟执行时间为200毫秒、20和30的延迟执行时间为180毫秒
-                int delay = 200;
-                if (integer > 10)
-                    delay = 180;
-
-                return Observable.from(new Integer[]{integer, integer / 2}).delay(delay, TimeUnit.MILLISECONDS);
-            }
-        }).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                printLog("Concat Next"+integer);
-            }
-        });
-
-    }
-
-    //与map一样,都是对数据转化,map是一对一,flatmap一对多;
-    private void doflatMap() {
-        Bean bean=new Bean();
-        Observable.just(bean)
-                .flatMap(new Func1<Bean, Observable<String>>() {
-                    @Override
-                    public Observable<String> call(Bean bean) {
-                        return Observable.from(bean.getData());
-                    }
-
-                })
-                .subscribe(new Action1<String>() {
-                    @Override
-                    public void call(String s) {
-                        printLog("Flat Next"+s);
-                    }
-                });
-
-    }
-
     //一共发送10次信息,Observable每次缓存3秒一起发送
     private void doBufferOperation() {
         mSubscription=Observable.create(new Observable.OnSubscribe<String>() {

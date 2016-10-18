@@ -29,10 +29,8 @@ public class DebounceEditTextFragment extends Fragment {
 
     @BindView(R.id.edit_search)
     EditText mEditSearch;
-    int N=0;
     private Subscription subscribe;
     private CompositeSubscription mCompositeSubscription;
-    ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

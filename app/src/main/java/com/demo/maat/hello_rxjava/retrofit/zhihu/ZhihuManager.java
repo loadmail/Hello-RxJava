@@ -23,7 +23,6 @@ public class ZhihuManager {
     }
 
     public ZhihuApi getZhihuApiService() {
-        if (zhihuApi == null) {
                 if (zhihuApi == null) {
                     zhihuApi = new Retrofit.Builder()
                             .baseUrl("http://news-at.zhihu.com")
@@ -32,7 +31,6 @@ public class ZhihuManager {
                             .build().create(ZhihuApi.class);
 
             }
-        }
 
         return zhihuApi;
     }
